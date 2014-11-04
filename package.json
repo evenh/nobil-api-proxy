@@ -1,0 +1,13 @@
+{
+    "name": "nobil-api",
+    "version": "0.0.1",
+    "private": true,
+    "scripts": {
+        "start": "node ./bin/www"
+    },
+    "dependencies": {
+        "express": "~4.0.0",
+        "body-parser": "~1.0.1",
+        "request": "~2.47.0"
+    }
+}
