@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Nobil API Proxy</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap-theme.min.css">
+    <style>
+        .params {
+            list-style: none;
+            padding-left: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Nobil API Proxy <small id="baseUrl"></small></h1>
+        <p class="lead">A simple front end for performing API calls to <a href="http://nobil.no">Nobil</a>, using more sensible URI's</p>
+
+        <p class="lead">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Debitis enim libero, nesciunt atque sint expedita voluptatum, officia asperiores, architecto vero quae. Cupiditate distinctio, nemo doloribus totam sequi praesentium adipisci dolores!</p>
+
+        <hr>
+        <p>All calls require use of the <code>X-Authorization</code> header containing your API key. All parameters are required, unless they are marked as Optional. </p>
+
+        <table class="table">
+            <tr>
+                <th>Endpoint</th>
+                <th>Parameters</th>
+                <th>Method</th>
+            </tr>
+            <tr>
+                <td>/chargers/id/<mark>:charger_id</mark></td>
+                <td>
+                    <p>Get all data on a given charger station</p>
+                    <ul class="params">
+                        <li><strong>:charger_id</strong> The charger ID. Example: <code>NOR_00171</code></li>
+                    </ul>
+                </td>
+                <td>GET</td>
+            </tr>
+            <tr>
+                <td>/chargers/map/<mark>:northeast<mark>/<mark>:southwest</mark></td>
+                <td>
+                    <ul class="params">
+                        <p>Search for charger stations via map references</p>
+                        <li><strong>:northeast</strong> Coordinates. Example: <code>(59.943921193288915, 10.826683044433594)</code></li>
+                        <li><strong>:southwest</strong> Coordinates. Example: <code>(59.883683240905256, 10.650901794433594)</code></li>
+                    </ul>
+                </td>
+                <td>GET</td>
+            </tr>
+            <tr>
+                <td>/chargers/near/<mark>:lat</mark>/<mark>:lon</mark>?<mark>distance</mark>=500&amp;<mark>limit</mark>=10</td>
+                <td>
+                    <p>The nearest charger station</p>
+                    <ul class="params">
+                        <li><strong>:lat</strong> Coordinate. Example: <code>59.91673</code></li>
+                        <li><strong>:lon</strong> Coordinate. Example: <code>10.74782</code></li>
+                        <li><strong>distance</strong> (Optional integer). Distance in meters. Default value: <code>500</code></li>
+                        <li><strong>limit</strong> (Optional integer). Default value: <code>10</code></li>
+                    </ul>
+                </td>
+                <td>GET</td>
+            </tr>
+            <tr>
+                <td>/stats/<mark>:country</mark></td>
+                <td>
+                    <p>Gets total stats and counties for a given county</p>
+                    <ul class="params">
+                        <li><strong>:country</strong> Country code. Valid codes are: <code>NOR</code>, <code>SWE</code> and <code>DAN</code></li>
+                    </ul>
+                </td>
+                <td>GET</td>
+            </tr>
+            <tr>
+                <td>/stats/<mark>:country</mark>/county/<mark>:county_id</mark></td>
+                <td>
+                    <p>Gets total stats for a given county</p>
+                    <ul class="params">
+                        <li><strong>:country</strong> Country code. Valid codes are: <code>NOR</code>, <code>SWE</code> and <code>DAN</code></li>
+                        <li><strong>:county_id</strong> A valid country id. Can be received by calling <code>/api/stats/:country</code></li>
+                    </ul>
+                </td>
+                <td>GET</td>
+            </tr>
+            <tr>
+                <td>/stats/<mark>:country</mark>/county/<mark>:county_id</mark>/municipalities</td>
+                <td>
+                    <p>Gets total stats for all municipalities in a given county</p>
+                    <ul class="params">
+                        <li><strong>:country</strong> Country code. Valid codes are: <code>NOR</code>, <code>SWE</code> and <code>DAN</code></li>
+                        <li><strong>:county_id</strong> A valid country id. Can be received by calling <code>/stats/:country</code></li>
+                    </ul>
+                </td>
+                <td>GET</td>
+            </tr>
+            <tr>
+                <td>/stats/<mark>:country</mark>/municipalities/<mark>:municipality<mark></td>
+                <td>
+                    <p>Gets stats for a given municipality</p>
+                    <ul class="params">
+                        <li><strong>:country</strong> Country code. Valid codes are: <code>NOR</code>, <code>SWE</code> and <code>DAN</code></li>
+                        <li><strong>:municipality</strong> Municipality id. Can be received by calling <code>/stats/:country/county/:county_id/municipalities</code></li>
+                    </ul>
+                </td>
+                <td>GET</td>
+            </tr>
+            <tr>
+                <td>/stats/<mark>:country</mark>/municipalities/<mark>:municipality</mark>/detail</td>
+                <td>
+                    <p>Gets detailed stats for a given municipality</p>
+                    <ul class="params">
+                        <li><strong>:country</strong> Country code. Valid codes are: <code>NOR</code>, <code>SWE</code> and <code>DAN</code></li>
+                        <li><strong>:municipality</strong> Municipality id. Can be received by calling <code>/stats/:country/county/:county_id/municipalities</code></li>
+                    </ul>
+                </td>
+                <td>GET</td>
+            </tr>
+        </table>
+        <p class="text-center">Nobil's API, created by <a href="http://www.transnova.no/">Transnova</a> is licensed under the <a href="http://creativecommons.org/licenses/by/3.0/">Creative Commons 3.0 Unported</a> license.</p>
+    </div>
+</body>
+</html>

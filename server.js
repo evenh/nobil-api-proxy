@@ -9,6 +9,10 @@ var request    = require('request');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(express.static(__dirname + '/public'), app.use(function (req, res, next) {
+  console.log('Recieved request from ' + req.ip + ' for API docs');
+  next();
+}));
 
 var port = process.env.PORT || 8080;
 var router = express.Router();
@@ -89,8 +93,8 @@ router.get('/chargers/map/:northeast/:southwest', function(req, res) {
 });
 
 // A charger near a map reference... TODO: POST + limit?
-router.get('/chargers/near/:lat/:lon/:distance', function(req, res) {
-  if(!req.params.lat || !req.params.lon || !req.params.distance) res.status(400).send({error: "Missing latitude and longitude coordinates and/or distance!"});
+router.get('/chargers/near/:lat/:lon', function(req, res) {
+  if(!req.params.lat || !req.params.lon) res.status(400).send({error: "Missing latitude and longitude coordinates!"});
 
   request.post({
     url: nobil_api,
@@ -101,8 +105,8 @@ router.get('/chargers/near/:lat/:lon/:distance', function(req, res) {
       type: "near",
       lat: req.params.lat,
       long: req.params.lon,
-      distance: req.params.distance,
-      limit: 10
+      distance: (!req.query.distance ? 500 : req.query.distance),
+      limit: (!req.query.limit ? 10 : req.query.limit)
     }
   }, function(err,httpResponse,body){
     if(err) res.status(406).send(err);
@@ -151,7 +155,7 @@ router.get('/stats/:country', function(req, res) {
 });
 
 // Get stats for a single county
-router.get('/stats/:country/:county_id', function(req, res) {
+router.get('/stats/:country/county/:county_id', function(req, res) {
   if(req.params.country == "NOR" || req.params.country == "SWE" || req.params.country == "DAN"){
     // If empty county id
     if(!req.params.county_id) res.status(400).send({error: "No county code specified"});
@@ -183,7 +187,7 @@ router.get('/stats/:country/:county_id', function(req, res) {
 });
 
 // Get stats for a single county with municipalities
-router.get('/stats/:country/:county_id/municipalities', function(req, res) {
+router.get('/stats/:country/county/:county_id/municipalities', function(req, res) {
   if(req.params.country == "NOR" || req.params.country == "SWE" || req.params.country == "DAN"){
     // If empty county id
     if(!req.params.county_id) res.status(400).send({error: "No county code specified"});
@@ -280,7 +284,7 @@ router.get('/stats/:country/municipalities/:municipality/detail', function(req, 
 
 
 // Calls will go against root (/)
-app.use('/', router);
+app.use('/api', router);
 
 // Start server
 app.listen(port);
