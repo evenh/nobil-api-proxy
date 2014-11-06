@@ -1,18 +1,18 @@
-// BASE SETUP
-// =============================================================================
+/*
+ * Simple PoC Nobil API Proxy
+ *
+ * Coded by Even Holthe for use in a
+ * Android project @ HiOA
+ */
 
-// call the packages we need
-var express    = require('express');    // call express
-var app        = express();         // define our app using express
+var express    = require('express');
+var app        = express();
 var bodyParser = require('body-parser');
 var request    = require('request');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(express.static(__dirname + '/public'), app.use(function (req, res, next) {
-  console.log('Recieved request from ' + req.ip + ' for API docs');
-  next();
-}));
+app.use(express.static(__dirname + '/public'));
 
 var port = process.env.PORT || 8080;
 var router = express.Router();
@@ -32,6 +32,10 @@ router.use(function(req, res, next) {
     console.log("\tClient is missing API key, rejecting");
     res.json({error: "API key is missing!"});
   } else {
+    baseRequest = request.defaults({
+      headers: { 'X-Forwarded-For': req.ip }
+    });
+
     next();
   }
 });
@@ -42,7 +46,7 @@ router.use(function(req, res, next) {
 router.get('/chargers/id/:charger_id', function(req, res) {
   if(!req.params.charger_id) res.status(400).send({error: "Missing charger id"});
 
-  request.post({
+  baseRequest.post({
     url: nobil_api,
     form: {
       apikey: nobil_api_key,
@@ -68,7 +72,7 @@ router.get('/chargers/id/:charger_id', function(req, res) {
 router.get('/chargers/map/:northeast/:southwest', function(req, res) {
   if(!req.params.northeast || !req.params.southwest) res.status(400).send({error: "Missing northeast and southwest map coordinates!"});
 
-  request.post({
+  baseRequest.post({
     url: nobil_api,
     form: {
       apikey: nobil_api_key,
@@ -96,7 +100,7 @@ router.get('/chargers/map/:northeast/:southwest', function(req, res) {
 router.get('/chargers/near/:lat/:lon', function(req, res) {
   if(!req.params.lat || !req.params.lon) res.status(400).send({error: "Missing latitude and longitude coordinates!"});
 
-  request.post({
+  baseRequest.post({
     url: nobil_api,
     form: {
       apikey: nobil_api_key,
@@ -122,14 +126,12 @@ router.get('/chargers/near/:lat/:lon', function(req, res) {
   });
 });
 
-
-
 /* STATS */
 
 // Get stats for all counties
 router.get('/stats/:country', function(req, res) {
   if(req.params.country == "NOR" || req.params.country == "SWE" || req.params.country == "DAN"){
-    request.post({
+    baseRequest.post({
       url: nobil_api,
       form: {
         apikey: nobil_api_key,
@@ -160,7 +162,7 @@ router.get('/stats/:country/county/:county_id', function(req, res) {
     // If empty county id
     if(!req.params.county_id) res.status(400).send({error: "No county code specified"});
 
-    request.post({
+    baseRequest.post({
       url: nobil_api,
       form: {
         apikey: nobil_api_key,
@@ -192,7 +194,7 @@ router.get('/stats/:country/county/:county_id/municipalities', function(req, res
     // If empty county id
     if(!req.params.county_id) res.status(400).send({error: "No county code specified"});
 
-    request.post({
+    baseRequest.post({
       url: nobil_api,
       form: {
         apikey: nobil_api_key,
@@ -224,7 +226,7 @@ router.get('/stats/:country/municipalities/:municipality', function(req, res) {
     // If empty municipality id
     if(!req.params.municipality) res.status(400).send({error: "No municipality id specified"});
 
-    request.post({
+    baseRequest.post({
       url: nobil_api,
       form: {
         apikey: nobil_api_key,
@@ -256,7 +258,7 @@ router.get('/stats/:country/municipalities/:municipality/detail', function(req, 
     // If empty municipality id
     if(!req.params.municipality) res.status(400).send({error: "No municipality id specified"});
 
-    request.post({
+    baseRequest.post({
       url: nobil_api,
       form: {
         apikey: nobil_api_key,
@@ -283,7 +285,7 @@ router.get('/stats/:country/municipalities/:municipality/detail', function(req, 
 });
 
 
-// Calls will go against root (/)
+// Path for API calls (/api)
 app.use('/api', router);
 
 // Start server
