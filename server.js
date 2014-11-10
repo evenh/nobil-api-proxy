@@ -90,13 +90,13 @@ router.get('/chargers/map/:northeast/:southwest', function(req, res) {
     if(object.error != undefined){
       res.status(400).send(object)
     } else {
-      res.json(object.chargerstations[0]);
+      res.json(object.chargerstations);
     }
 
   });
 });
 
-// A charger near a map reference... TODO: POST + limit?
+// A charger near a map reference.
 router.get('/chargers/near/:lat/:lon', function(req, res) {
   if(!req.params.lat || !req.params.lon) res.status(400).send({error: "Missing latitude and longitude coordinates!"});
 
