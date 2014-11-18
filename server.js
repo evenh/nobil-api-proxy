@@ -5,17 +5,17 @@
  * Android project @ HiOA
  */
 
-var express    = require('express');
-var app        = express();
-var bodyParser = require('body-parser');
-var request    = require('request');
+ var express    = require('express');
+ var app        = express();
+ var bodyParser = require('body-parser');
+ var request    = require('request');
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use(express.static(__dirname + '/public'));
+ app.use(bodyParser.urlencoded({ extended: true }));
+ app.use(bodyParser.json());
+ app.use(express.static(__dirname + '/public'));
 
-var port = process.env.PORT || 8080;
-var router = express.Router();
+ var port = process.env.PORT || 8080;
+ var router = express.Router();
 
 // Nobil specific
 nobil_api = 'http://nobil.no/api/server/search.php';
@@ -31,13 +31,13 @@ router.use(function(req, res, next) {
   if(!nobil_api_key){
     console.log("\tClient is missing API key, rejecting");
     res.json({error: "API key is missing!"});
-  } else {
+} else {
     baseRequest = request.defaults({
       headers: { 'X-Forwarded-For': req.ip }
-    });
+  });
 
     next();
-  }
+}
 });
 
 /* CHARGERS */
@@ -54,18 +54,57 @@ router.get('/chargers/id/:charger_id', function(req, res) {
       action: "search",
       type: "id",
       id: req.params.charger_id
-    }
-  }, function(err,httpResponse,body){
+  }
+}, function(err,httpResponse,body){
     if(err) res.status(406).send(err);
 
     var object = JSON.parse(body);
 
     if(object.error != undefined){
       res.status(400).send(object)
-    } else {
+  } else {
       res.json(object.chargerstations[0]);
-    }
-  });
+  }
+});
+});
+
+router.get('/chargers/address/:address', function(req, res) {
+    if(!req.params.address) res.status(400).send({error: "Missing address"});
+
+    request.get("https://maps.googleapis.com/maps/api/geocode/json?region=no&address=" + req.params.address, function (error, response, body) {
+        if(error) res.status(504).send({error: "Problem while asking Google for geocode"});
+
+        var bounds = JSON.parse(body).results[0].geometry.viewport;
+
+        if(!bounds){
+            res.status(400).send({error: "No matches"});
+        } else {
+            var ne = "(" + bounds.northeast.lat + ", " + bounds.northeast.lng + ")";
+            var sw = "(" + bounds.southwest.lat + ", " + bounds.southwest.lng + ")";
+
+            baseRequest.post({
+                url: nobil_api,
+                form: {
+                  apikey: nobil_api_key,
+                  apiversion: 3,
+                  action: "search",
+                  type: "rectangle",
+                  northeast: ne,
+                  southwest: sw,
+              }
+            }, function(err,httpResponse,body){
+                if(err) res.status(406).send(err);
+
+                var object = JSON.parse(body);
+
+                if(object.error != undefined){
+                    res.status(400).send(object)
+                } else {
+                    res.json(object.chargerstations);
+                }
+            });
+        }
+    });
 });
 
 // A charger my map references
@@ -81,19 +120,19 @@ router.get('/chargers/map/:northeast/:southwest', function(req, res) {
       type: "rectangle",
       northeast: req.params.northeast,
       southwest: req.params.southwest,
-    }
-  }, function(err,httpResponse,body){
+  }
+}, function(err,httpResponse,body){
     if(err) res.status(406).send(err);
 
     var object = JSON.parse(body);
 
     if(object.error != undefined){
       res.status(400).send(object)
-    } else {
+  } else {
       res.json(object.chargerstations);
-    }
+  }
 
-  });
+});
 });
 
 // A charger near a map reference.
@@ -111,19 +150,19 @@ router.get('/chargers/near/:lat/:lon', function(req, res) {
       long: req.params.lon,
       distance: (!req.query.distance ? 500 : req.query.distance),
       limit: (!req.query.limit ? 10 : req.query.limit)
-    }
-  }, function(err,httpResponse,body){
+  }
+}, function(err,httpResponse,body){
     if(err) res.status(406).send(err);
 
     var object = JSON.parse(body);
 
     if(object.error != undefined){
       res.status(400).send(object)
-    } else {
+  } else {
       res.json(object.chargerstations);
-    }
+  }
 
-  });
+});
 });
 
 /* STATS */
@@ -139,21 +178,21 @@ router.get('/stats/:country', function(req, res) {
         action: "search",
         type: "stats_TotalsAllCounties",
         countrycode: req.params.country
-      }
-    }, function(err,httpResponse,body){
-      if(err) res.status(406).send(err);
+    }
+}, function(err,httpResponse,body){
+  if(err) res.status(406).send(err);
 
-      var object = JSON.parse(body);
+  var object = JSON.parse(body);
 
-      if(object.error != undefined){
-        res.status(400).send(object)
-      } else {
-        res.json(object.chargerstations);
-      }
-    });
-  } else {
+  if(object.error != undefined){
+    res.status(400).send(object)
+} else {
+    res.json(object.chargerstations);
+}
+});
+} else {
     res.status(400).send({ error: "Country code must be NOR, SWE or DAN"});
-  }
+}
 });
 
 // Get stats for a single county
@@ -171,21 +210,21 @@ router.get('/stats/:country/county/:county_id', function(req, res) {
         type: "stats_TotalsByCountyId",
         countrycode: req.params.country,
         id: req.params.county_id
-      }
-    }, function(err,httpResponse,body){
-      if(err) res.status(406).send(err);
+    }
+}, function(err,httpResponse,body){
+  if(err) res.status(406).send(err);
 
-      var object = JSON.parse(body);
+  var object = JSON.parse(body);
 
-      if(object.error != undefined){
-        res.status(400).send(object)
-      } else {
-        res.json(object.chargerstations[0]);
-      }
-    });
-  } else {
+  if(object.error != undefined){
+    res.status(400).send(object)
+} else {
+    res.json(object.chargerstations[0]);
+}
+});
+} else {
     res.status(400).send({ error: "Country code must be NOR, SWE or DAN"});
-  }
+}
 });
 
 // Get stats for a single county with municipalities
@@ -203,21 +242,21 @@ router.get('/stats/:country/county/:county_id/municipalities', function(req, res
         type: "stats_DetailedTotalsByCountyId",
         countrycode: req.params.country,
         id: req.params.county_id
-      }
-    }, function(err,httpResponse,body){
-      if(err) res.status(406).send(err);
+    }
+}, function(err,httpResponse,body){
+  if(err) res.status(406).send(err);
 
-      var object = JSON.parse(body);
+  var object = JSON.parse(body);
 
-      if(object.error != undefined){
-        res.status(400).send(object)
-      } else {
-        res.json(object.chargerstations);
-      }
-    });
-  } else {
+  if(object.error != undefined){
+    res.status(400).send(object)
+} else {
+    res.json(object.chargerstations);
+}
+});
+} else {
     res.status(400).send({ error: "Country code must be NOR, SWE or DAN"});
-  }
+}
 });
 
 // Get stats for a single county with municipalities
@@ -235,21 +274,21 @@ router.get('/stats/:country/municipalities/:municipality', function(req, res) {
         type: "stats_TotalsByMunicipalId",
         countrycode: req.params.country,
         id: req.params.municipality
-      }
-    }, function(err,httpResponse,body){
-      if(err) res.status(406).send(err);
+    }
+}, function(err,httpResponse,body){
+  if(err) res.status(406).send(err);
 
-      var object = JSON.parse(body);
+  var object = JSON.parse(body);
 
-      if(object.error != undefined){
-        res.status(400).send(object)
-      } else {
-        res.json(object.chargerstations[0]);
-      }
-    });
-  } else {
+  if(object.error != undefined){
+    res.status(400).send(object)
+} else {
+    res.json(object.chargerstations[0]);
+}
+});
+} else {
     res.status(400).send({ error: "Country code must be NOR, SWE or DAN"});
-  }
+}
 });
 
 // Get detailed stats for a single county with municipalities
@@ -267,21 +306,21 @@ router.get('/stats/:country/municipalities/:municipality/detail', function(req, 
         type: "stats_DetailTotalsByMunicipalId",
         countrycode: req.params.country,
         id: req.params.municipality
-      }
-    }, function(err,httpResponse,body){
-      if(err) res.status(406).send(err);
+    }
+}, function(err,httpResponse,body){
+  if(err) res.status(406).send(err);
 
-      var object = JSON.parse(body);
+  var object = JSON.parse(body);
 
-      if(object.error != undefined){
-        res.status(400).send(object)
-      } else {
-        res.json(object.chargerstations);
-      }
-    });
-  } else {
+  if(object.error != undefined){
+    res.status(400).send(object)
+} else {
+    res.json(object.chargerstations);
+}
+});
+} else {
     res.status(400).send({ error: "Country code must be NOR, SWE or DAN" });
-  }
+}
 });
 
 
