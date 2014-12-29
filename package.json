@@ -1,17 +1,23 @@
 {
-    "name": "nobil-api",
-    "version": "0.0.1",
-    "private": true,
-    "scripts": {
-        "start": "node ./bin/www"
-    },
-    "engines": {
-        "node": ">=0.10.33",
-        "npm": ">=1.4"
-    },
-    "dependencies": {
-        "express": "~4.0.0",
-        "body-parser": "~1.0.1",
-        "request": "~2.47.0"
-    }
+  "name":"nobil-api",
+  "version":"0.0.1",
+  "author":"Even Holthe <even.holthe@me.com>",
+  "private":true,
+  "scripts": {
+    "start":"node ./bin/www"
+  },
+  "engines": {
+    "node":">=0.10.33",
+    "npm":">=1.4"
+  },
+  "dependencies": {
+    "express":"~4.0.0",
+    "body-parser":"~1.0.1",
+    "request":"~2.47.0"
+  },
+  "devDependencies": {
+    "mocha": "~2.1.0",
+    "supertest": "~0.15.0",
+    "should": "~4.4.2"
+  }
 }
