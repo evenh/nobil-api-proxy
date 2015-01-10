@@ -53,6 +53,7 @@ describe('Nobil API Proxy tests', function() {
     });
 
     it('should not find chargers when place is not specified', function(done) {
+      this.timeout(6000);
       request(url)
       .get('/chargers/place/0')
       .set(auth)
